@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>DATA ABSENSI SISWA</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .header {
+      background-color: #0d6efd;
+      color: white;
+      padding: 20px 0;
+      margin-bottom: 30px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .footer {
+      background-color: #343a40;
+      color: white;
+      padding: 15px 0;
+      margin-top: 30px;
+      text-align: center;
+      border-radius: 5px;
+    }
+    .table-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .btn-add {
+      margin-bottom: 20px;
+    }
+    .summary-card {
+      background-color: white;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .badge-hadir { background-color: #198754; }
+    .badge-sakit { background-color: #ffc107; color: #000; }
+    .badge-izin { background-color: #0dcaf0; }
+    .badge-tidak-hadir { background-color: #dc3545; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header class="header text-center">
+      <h1>DATA ABSENSI SISWA</h1>
+      <p class="mb-0">Sistem Pengelolaan Kehadiran Siswa</p>
+    </header>
+
+    <div class="row">
+      <div class="col-md-3">
+        <div class="summary-card">
+          <h5>Statistik Kehadiran</h5>
+          <div id="statistik-kehadiran">
+            <p>Memuat data...</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-9">
+        <div class="table-container">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Daftar Absensi</h3>
+            <a href="formtambah.html" class="btn btn-primary btn-add">
+              <i class="bi bi-plus-circle"></i> Tambah Data Absensi
+            </a>
+          </div>
+          
+          <table class="table table-striped table-hover" id="daftar-absensi">
+            <thead class="table-primary">
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Tanggal</th>
+                <th scope="col">NIS</th>
+                <th scope="col">Nama</th>
+                <th scope="col">Kelas</th>
+                <th scope="col">Keterangan</th>
+                <th scope="col">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+          
+          <p id="jumlah-absensi" class="text-muted">Memuat data...</p>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <p class="mb-0">&copy; 2025 Sistem Absensi Siswa | SMK Plus Insan Cemerlang</p>
+    </footer>
+  </div>
+
+  <script type="module">
+    import { hapusAbsensi, ambilDaftarAbsensi } from './main.js';
+
+    $(document).ready(async function() {
+      let elemenDaftarAbsensi = $("#daftar-absensi > tbody");
+      let daftarAbsensi = await ambilDaftarAbsensi();
+
+      let nomor = 1;
+      let statistik = {
+        hadir: 0,
+        sakit: 0,
+        izin: 0,
+        tidak_hadir: 0
+      };
+
+      if (daftarAbsensi.length === 0) {
+        elemenDaftarAbsensi.append(
+          "<tr><td colspan='7' class='text-center'>Tidak ada data absensi</td></tr>"
+        );
+      } else {
+        daftarAbsensi.forEach((data) => {
+          // Update statistik
+          statistik[data.keterangan.toLowerCase().replace(' ', '_')]++;
+          
+          // Format keterangan dengan badge
+          let badgeClass = '';
+          switch(data.keterangan.toLowerCase()) {
+            case 'hadir': badgeClass = 'badge-hadir'; break;
+            case 'sakit': badgeClass = 'badge-sakit'; break;
+            case 'izin': badgeClass = 'badge-izin'; break;
+            case 'tidak hadir': badgeClass = 'badge-tidak-hadir'; break;
+          }
+          
+          elemenDaftarAbsensi.append(
+            "<tr>" +
+            "<td>" + nomor + "</td>" +
+            "<td>" + new Date(data.tanggal).toLocaleDateString('id-ID') + "</td>" +
+            "<td>" + data.nis + "</td>" +
+            "<td>" + data.nama + "</td>" +
+            "<td>" + data.kelas + "</td>" +
+            "<td><span class='badge " + badgeClass + "'>" + data.keterangan + "</span></td>" +
+            "<td>" + 
+              "<a href='#' class='btn btn-sm btn-warning me-2 link-ubah' data='" + data.id + "'><i class='bi bi-pencil'></i> Ubah</a> " + 
+              "<button class='btn btn-sm btn-danger tombol-hapus' data='" + data.id + "'><i class='bi bi-trash'></i> Hapus</button>" + 
+            "</td>" +
+            "</tr>"
+          );
+          nomor++;
+        });
+      }
+
+      // Update statistik
+      $("#statistik-kehadiran").html(`
+        <p>Hadir: <span class="badge bg-success">${statistik.hadir}</span></p>
+        <p>Sakit: <span class="badge bg-warning text-dark">${statistik.sakit}</span></p>
+        <p>Izin: <span class="badge bg-info">${statistik.izin}</span></p>
+        <p>Tidak Hadir: <span class="badge bg-danger">${statistik.tidak_hadir}</span></p>
+      `);
+      
+      $('#jumlah-absensi').html("Total Data Absensi: " + (nomor - 1));
+
+      $(".tombol-hapus").click(async function() {
+        if (confirm("Apakah Anda yakin ingin menghapus data absensi ini?")) {
+          await hapusAbsensi($(this).attr('data'));
+          location.reload();
+        }
+      });
+
+      $(".link-ubah").click(async function() {
+        location.replace('formubah.html?id=' + $(this).attr('data'));
+      });
+    });
+  </script>
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</body>
+</html>

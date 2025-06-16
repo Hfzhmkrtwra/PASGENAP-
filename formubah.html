@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Ubah Data Absensi</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .header {
+      background-color: #0d6efd;
+      color: white;
+      padding: 20px 0;
+      margin-bottom: 30px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .form-container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    .btn-back {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header class="header text-center">
+      <h1>UBAH DATA ABSENSI SISWA</h1>
+    </header>
+
+    <a href="index.html" class="btn btn-secondary btn-back">
+      <i class="bi bi-arrow-left"></i> Kembali ke Daftar
+    </a>
+    
+    <div class="form-container">
+      <form id="form-ubah-absensi">
+        <input type="hidden" id="id">
+        
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="tanggal" class="form-label">Tanggal</label>
+            <input type="date" class="form-control" id="tanggal" required>
+          </div>
+          <div class="col-md-6">
+            <label for="nis" class="form-label">NIS</label>
+            <input type="text" class="form-control" id="nis" placeholder="Masukkan NIS siswa" required>
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="nama" class="form-label">Nama Siswa</label>
+            <input type="text" class="form-control" id="nama" placeholder="Masukkan nama lengkap" required>
+          </div>
+          <div class="col-md-6">
+            <label for="kelas" class="form-label">Kelas</label>
+            <input type="text" class="form-control" id="kelas" placeholder="Contoh: X IPA 1" required>
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="alamat" class="form-label">Alamat</label>
+            <textarea class="form-control" id="alamat" rows="2" placeholder="Masukkan alamat siswa"></textarea>
+          </div>
+          <div class="col-md-6">
+            <label for="notlpn" class="form-label">No. Telepon</label>
+            <input type="text" class="form-control" id="notlpn" placeholder="Masukkan nomor telepon">
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label for="keterangan" class="form-label">Keterangan</label>
+          <select class="form-select" id="keterangan" required>
+            <option value="" disabled>Pilih keterangan</option>
+            <option value="Hadir">Hadir</option>
+            <option value="Sakit">Sakit</option>
+            <option value="Izin">Izin</option>
+            <option value="Tidak Hadir">Tidak Hadir</option>
+          </select>
+        </div>
+        
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> Simpan Perubahan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { ambilAbsensiById, ubahAbsensi } from './main.js';
+
+    $(document).ready(async function() {
+      // Ambil ID dari URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get('id');
+      
+      if (!id) {
+        alert("ID absensi tidak valid");
+        location.replace("index.html");
+        return;
+      }
+      
+      // Ambil data absensi berdasarkan ID
+      const absensi = await ambilAbsensiById(id);
+      
+      if (!absensi) {
+        alert("Data absensi tidak ditemukan");
+        location.replace("index.html");
+        return;
+      }
+      
+      // Isi form dengan data yang ada
+      $("#id").val(absensi.id);
+      $("#tanggal").val(absensi.tanggal);
+      $("#nis").val(absensi.nis);
+      $("#nama").val(absensi.nama);
+      $("#kelas").val(absensi.kelas);
+      $("#alamat").val(absensi.alamat);
+      $("#notlpn").val(absensi.notlpn);
+      $("#keterangan").val(absensi.keterangan);
+      
+      $("#form-ubah-absensi").submit(async function(e) {
+        e.preventDefault();
+        
+        let data = {
+          id: $("#id").val(),
+          tanggal: $("#tanggal").val(),
+          nis: $("#nis").val(),
+          nama: $("#nama").val(),
+          kelas: $("#kelas").val(),
+          alamat: $("#alamat").val(),
+          notlpn: $("#notlpn").val(),
+          keterangan: $("#keterangan").val()
+        };
+        
+        await ubahAbsensi(data);
+        alert("Data absensi berhasil diubah!");
+        location.replace("index.html");
+      });
+    });
+  </script>
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</body>
+</html>
