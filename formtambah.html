@@ -55,7 +55,15 @@
           <div class="col-md-6">
             <label for="tanggal" class="form-label">Tanggal</label>
             <input type="date" class="form-control" id="tanggal" required>
-          </div>
+          <div class="btn-group share-buttons mt-3">
+          <button type="button" class="btn btn-success btn-share" data-app="whatsapp">
+            <i class="bi bi-whatsapp"></i> WhatsApp
+          </button>
+          <button type="button" class="btn btn-primary btn-share" data-app="all">
+            <i class="bi bi-share-fill"></i> Bagikan ke Aplikasi Lain
+          </button>
+        </div>
+          
           <div class="col-md-6">
             <label for="nis" class="form-label">NIS</label>
             <input type="text" class="form-control" id="nis" placeholder="Masukkan NIS siswa" required>
@@ -106,6 +114,37 @@
 
   <script type="module">
     import { tambahAbsensi } from './main.js';
+
+    // Event listener untuk tombol share
+document.querySelectorAll('.btn-share').forEach(button => {
+  button.addEventListener('click', async function() {
+    const form = document.getElementById('form-ubah-absensi');
+    form.classList.add('was-validated');
+    
+    if (!form.checkValidity()) {
+      alert('Harap lengkapi semua data sebelum berbagi!');
+      return;
+    }
+
+    const data = {
+      id: $("#id").val(),
+      tanggal: $("#tanggal").val(),
+      nis: $("#nis").val(),
+      nama: $("#nama").val(),
+      kelas: $("#kelas").val(),
+      alamat: $("#alamat").val(),
+      notlpn: $("#notlpn").val(),
+      keterangan: $("#keterangan").val()
+    };
+
+    try {
+      const app = this.getAttribute('data-app');
+      await shareAbsensi(data, app === 'all' ? null : app);
+    } catch (error) {
+      alert("Gagal berbagi: " + error.message);
+    }
+  });
+});
 
     $(document).ready(function() {
       // Set tanggal default ke hari ini

@@ -250,3 +250,55 @@ export async function ambilAbsensiByNis(nis) {
     throw error;
   }
 }
+
+/**
+ * Fungsi untuk berbagi data ke berbagai aplikasi
+ * @param {Object} data - Data absensi
+ * @param {string} [appSpecific] - Nama paket aplikasi tujuan (opsional)
+ */
+export async function shareAbsensi(data, appSpecific = null) {
+  const message = `📊 *DATA ABSENSI SISWA* 📊\n\n` +
+    `📅 Tanggal: ${data.tanggal}\n` +
+    `🆔 NIS: ${data.nis}\n` +
+    `👦 Nama: ${data.nama}\n` +
+    `🏫 Kelas: ${data.kelas}\n` +
+    `📍 Status: ${data.keterangan}\n\n` +
+    `_Data ini dikirim dari Aplikasi Absensi Sekolah_`;
+
+  try {
+    if (appSpecific) {
+      // Berbagi ke aplikasi tertentu
+      const urlSchemes = {
+        whatsapp: `whatsapp://send?text=${encodeURIComponent(message)}`,
+        gmail: `mailto:?body=${encodeURIComponent(message)}`,
+        telegram: `tg://msg?text=${encodeURIComponent(message)}`
+      };
+      
+      if (urlSchemes[appSpecific]) {
+        window.open(urlSchemes[appSpecific], '_blank');
+      }
+    } else {
+      // Berbagi ke semua aplikasi yang mendukung
+      if (navigator.share) {
+        // Menggunakan Web Share API untuk mobile
+        await navigator.share({
+          title: 'Data Absensi Siswa',
+          text: message,
+        });
+      } else {
+        // Fallback untuk desktop
+        const shareUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(shareUrl, '_blank');
+      }
+    }
+    
+    // Catat aktivitas sharing di database
+    await updateDoc(doc(db, "absensi_siswa", data.id), {
+      lastShared: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error("Gagal berbagi data:", error);
+    throw error;
+  }
+}
